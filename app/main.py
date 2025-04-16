@@ -1,24 +1,24 @@
 import streamlit as st
-import os
-from app.utils import lire_pdf, poser_question
+from utils import *
 
 st.set_page_config(page_title="Assistant Jardinage", page_icon="🌿")
 st.title("🌻 Assistant IA - Jardinage")
-st.markdown("Téléverse un guide PDF et pose une question dessus.")
 
-uploaded_file = st.file_uploader("Choisir un fichier PDF", type=["pdf"])
+st.markdown("Cette application utilise **tous les documents PDF** stockés sur Azure Blob pour répondre à vos questions.")
 
-if uploaded_file:
-    file_path = os.path.join("data", uploaded_file.name)
-    os.makedirs("data", exist_ok=True)
-    with open(file_path, "wb") as f:
-        f.write(uploaded_file.read())
+question = st.text_input("Quelle est votre question ?")
 
-    texte_pdf = lire_pdf(file_path)
-    question = st.text_input("Quelle est ta question ?")
+if st.button("Poser la question") and question:
+    with st.spinner("Je lis tous les documents Azure..."):
+        try:
+            texte_pdf = lire_tous_les_pdfs_du_dossier()
+        except Exception as e:
+            st.error(f"Erreur : {e}")
+            texte_pdf = ""
 
-    if st.button("Poser la question") and question:
-        with st.spinner("Je réfléchis... 🧠"):
-            reponse = poser_question(question, texte_pdf[:4000])
-            st.markdown("### Réponse :")
+        if texte_pdf:
+            contexte = texte_pdf[:4000]
+            reponse = poser_question(question, contexte)
             st.success(reponse)
+        else:
+            st.error("Aucun contenu extrait des documents.")

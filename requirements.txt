@@ -2,3 +2,4 @@ azure-openai
 streamlit
 PyPDF2
 python-dotenv
+azure-storage-blob
